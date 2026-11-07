@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Helpdesk CGC | Official ERP</title>
+
+    <!-- Mobile App Icon & PWA Setup (No Grey '1' Icon!) -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Helpdesk CGC">
+    <link rel="icon" type="image/png" sizes="512x512" href="https://cdn-icons-png.flaticon.com/512/4712/4712109.png">
+    <link rel="shortcut icon" type="image/png" href="https://cdn-icons-png.flaticon.com/512/4712/4712109.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://cdn-icons-png.flaticon.com/512/4712/4712109.png">
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body {
+            background: url('https://gcp.cgcuniversity.in/images/full-image.png') no-repeat center center/cover;
+            min-height: 100vh; display: flex; justify-content: center; align-items: center; color: white;
+        }
+        body::before {
+            content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(10, 15, 28, 0.78); z-index: -1;
+        }
+        .login-card {
+            background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(18px);
+            border: 1px solid rgba(255, 255, 255, 0.22); width: 440px; padding: 36px;
+            border-radius: 20px; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.65);
+        }
+        .header { text-align: center; margin-bottom: 24px; }
+        .header .logo {
+            width: 58px; height: 58px; background: linear-gradient(135deg, #4facfe, #00f2fe);
+            border-radius: 16px; display: inline-flex; align-items: center; justify-content: center;
+            font-size: 30px; margin-bottom: 12px; box-shadow: 0 8px 20px rgba(79, 172, 254, 0.4);
+        }
+        .role-tabs {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+            background: rgba(0, 0, 0, 0.45); padding: 6px; border-radius: 12px; margin-bottom: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .role-tab {
+            padding: 10px 6px; text-align: center; font-size: 12px; font-weight: 600;
+            border-radius: 8px; cursor: pointer; color: #94a3b8; transition: 0.25s;
+        }
+        .role-tab.active {
+            background: linear-gradient(135deg, #4facfe, #00f2fe); color: #0f172a; font-weight: 700;
+        }
+        .form-group { margin-bottom: 16px; position: relative; }
+        .form-group label { display: block; font-size: 12px; color: #e2e8f0; margin-bottom: 6px; font-weight: 500; }
+        .form-group input {
+            width: 100%; padding: 12px 14px; background: rgba(0, 0, 0, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 10px; color: white; font-size: 14px; outline: none;
+        }
+        .form-group input:focus { border-color: #4facfe; }
+        .eye-btn {
+            position: absolute; right: 12px; top: 34px; cursor: pointer;
+            font-size: 14px; color: #94a3b8; user-select: none;
+        }
+        .login-btn {
+            width: 100%; padding: 13px; background: linear-gradient(135deg, #4facfe, #00f2fe);
+            border: none; border-radius: 10px; color: #0f172a; font-size: 15px; font-weight: 700; cursor: pointer;
+            margin-top: 6px; transition: 0.2s;
+        }
+        .error-msg {
+            display: none; color: #fca5a5; background: rgba(239, 68, 68, 0.2);
+            border: 1px solid #ef4444; padding: 8px; border-radius: 8px; font-size: 12px;
+            text-align: center; margin-bottom: 14px;
+        }
+        @media (max-width: 768px) { .login-card { width: 92% !important; padding: 24px !important; } }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="header">
+            <div class="logo" id="logoBox">🛠️</div>
+            <h2>CGC CampusCare ERP</h2>
+            <p style="font-size:13px; color:#cbd5e1; margin-top:4px;">Official Campus Maintenance & Helpdesk Portal</p>
+        </div>
+
+        <div class="role-tabs">
+            <div class="role-tab active" onclick="selectRole('STUDENT', this)">👨‍🎓 Student</div>
+            <div class="role-tab" onclick="selectRole('FACULTY', this)">👨‍🏫 Faculty</div>
+            <div class="role-tab" onclick="selectRole('ADMIN', this)">🛡️ Admin</div>
+        </div>
+
+        <div id="errBox" class="error-msg">⚠️ Please enter valid credentials!</div>
+
+        <form onsubmit="handleLogin(event)" autocomplete="off">
+            <div class="form-group">
+                <label id="userLabel">Student Name & Roll No</label>
+                <input type="text" id="username" placeholder="Enter your Name & Roll No (e.g. Aman - 24BCA)" required>
+            </div>
+            <div class="form-group">
+                <label>Portal Password</label>
+                <input type="password" id="password" placeholder="Enter your portal password" required>
+                <span class="eye-btn" onclick="togglePass()">👁️</span>
+            </div>
+            <button type="submit" id="submitBtn" class="login-btn">Sign In to Student Portal ➔</button>
+        </form>
+    </div>
+
+    <script>
+        let selectedRole = 'STUDENT';
+
+        function togglePass() {
+            const p = document.getElementById('password');
+            p.type = p.type === 'password' ? 'text' : 'password';
+        }
+
+        function selectRole(role, el) {
+            selectedRole = role;
+            document.querySelectorAll('.role-tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+
+            const label = document.getElementById('userLabel');
+            const input = document.getElementById('username');
+            const pass = document.getElementById('password');
+            const btn = document.getElementById('submitBtn');
+
+            input.value = '';
+            pass.value = '';
+
+            if (role === 'STUDENT') {
+                label.innerText = 'Student Name & Roll No';
+                input.placeholder = 'Enter Name & Roll No (e.g. Aman - BCA)';
+                btn.innerText = 'Sign In to Student Portal ➔';
+                btn.style.background = 'linear-gradient(135deg, #4facfe, #00f2fe)';
+                btn.style.color = '#0f172a';
+            } else if (role === 'FACULTY') {
+                label.innerText = 'Faculty Name & Employee ID';
+                input.placeholder = 'Enter Faculty Name & Dept (e.g. Prof. Sharma)';
+                btn.innerText = 'Sign In to Faculty Portal ➔';
+                btn.style.background = 'linear-gradient(135deg, #a855f7, #ec4899)';
+                btn.style.color = '#ffffff';
+            } else {
+                label.innerText = 'Admin / Warden Username';
+                input.placeholder = 'Enter Admin Username (e.g. Chief Warden)';
+                btn.innerText = 'Sign In to Admin Console ➔';
+                btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
+                btn.style.color = '#ffffff';
+            }
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            const name = document.getElementById('username').value.trim();
+            const pass = document.getElementById('password').value.trim();
+
+            if (pass.length < 3) {
+                const err = document.getElementById('errBox');
+                err.innerText = '⚠️ Password must be at least 3 characters!';
+                err.style.display = 'block';
+                return;
+            }
+
+            localStorage.setItem('campusUser', name);
+            localStorage.setItem('campusRole', selectedRole);
+
+            if (selectedRole === 'ADMIN') {
+                window.location.href = 'admin.html';
+            } else if (selectedRole === 'FACULTY') {
+                window.location.href = 'faculty.html';
+            } else {
+                window.location.href = 'dashboard.html';
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Helpdesk Portal | CGC CampusCare</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0f172a">
+    <link rel="icon" type="image/png" sizes="512x512" href="https://cdn-icons-png.flaticon.com/512/4712/4712109.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        body {
+            background: url('https://gcp.cgcuniversity.in/images/full-image.png') no-repeat center center/cover;
+            background-attachment: fixed; color: #f8fafc; min-height: 100vh; padding: 25px 40px;
+        }
+        body::before {
+            content: ''; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: var(--overlay, rgba(10, 15, 28, 0.78)); z-index: -1; transition: 0.3s;
+        }
+        .topbar {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(14px);
+            padding: 16px 26px; border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.18); margin-bottom: 24px;
+        }
+        .brand { display: flex; align-items: center; gap: 14px; }
+        .brand-icon {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+            width: 44px; height: 44px; border-radius: 12px;
+            display: flex; align-items: center; justify-content: center; font-size: 22px;
+        }
+        .role-pill {
+            padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700;
+            background: rgba(79, 172, 254, 0.2); color: #7dd3fc; border: 1px solid #4facfe;
+        }
+        .btn-top {
+            background: rgba(255, 255, 255, 0.1); color: white; border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 8px 15px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer;
+        }
+        .logout-btn {
+            background: #ef4444; color: white; text-decoration: none;
+            padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 600;
+        }
+        .stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 24px; }
+        .stat-card {
+            background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 14px;
+            padding: 20px 24px; display: flex; justify-content: space-between; align-items: center;
+        }
+        .stat-card h4 { color: #cbd5e1; font-size: 13px; margin-bottom: 6px; }
+        .stat-card h2 { font-size: 30px; }
+        .workspace { display: grid; grid-template-columns: 420px 1fr; gap: 24px; align-items: start; }
+        .panel {
+            background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 16px; padding: 24px; overflow-x: auto;
+        }
+        .panel h3 {
+            font-size: 17px; margin-bottom: 18px; padding-bottom: 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        .form-row { display: flex; gap: 12px; }
+        .form-group { margin-bottom: 14px; flex: 1; }
+        .form-group label { display: block; font-size: 12px; color: #e2e8f0; margin-bottom: 6px; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 10px 12px; background: rgba(0, 0, 0, 0.45);
+            border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 8px; color: white; font-size: 13px; outline: none;
+        }
+        .form-group select option { background: #0f172a; }
+        .form-group textarea { height: 70px; resize: none; }
+        .btn-submit {
+            width: 100%; padding: 12px; background: linear-gradient(135deg, #4facfe, #00f2fe);
+            color: #0f172a; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; cursor: pointer;
+        }
+        .toast {
+            display: none; background: rgba(16, 185, 129, 0.25); border: 1px solid #10b981;
+            color: #6ee7b7; padding: 12px; border-radius: 8px; font-size: 13px; margin-bottom: 14px; text-align: center;
+        }
+        table { width: 100%; border-collapse: collapse; min-width: 500px; }
+        th, td { padding: 13px 12px; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.12); font-size: 13px; }
+        th { background: rgba(0, 0, 0, 0.35); color: #cbd5e1; font-size: 11px; text-transform: uppercase; }
+        .badge { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 600; }
+        .status-Pending { background: rgba(245, 158, 11, 0.25); color: #fcd34d; border: 1px solid #f59e0b; }
+        .status-Progress { background: rgba(59, 130, 246, 0.25); color: #93c5fd; border: 1px solid #3b82f6; }
+        .status-Resolved { background: rgba(16, 185, 129, 0.25); color: #6ee7b7; border: 1px solid #10b981; }
+        .btn-withdraw {
+            background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid #ef4444;
+            padding: 5px 10px; border-radius: 6px; font-size: 11px; cursor: pointer;
+        }
+        .modal-bg {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(6px);
+            justify-content: center; align-items: center; z-index: 100;
+        }
+        .modal-card {
+            background: #1e293b; border: 1px solid rgba(255,255,255,0.2);
+            width: 420px; max-width: 92%; padding: 26px; border-radius: 16px; color: white;
+        }
+        .modal-card h3 { margin-bottom: 16px; border-bottom: 1px solid #334155; padding-bottom: 10px; }
+        .setting-item { margin-bottom: 14px; }
+        .setting-item label { display: block; font-size: 12px; color: #cbd5e1; margin-bottom: 6px; }
+        .setting-item select, .setting-item input {
+            width: 100%; padding: 10px; background: #0f172a; border: 1px solid #334155; color: white; border-radius: 8px;
+        }
+        @media (max-width: 768px) {
+            body { padding: 15px !important; }
+            .topbar { flex-direction: column; gap: 12px; text-align: center; }
+            .stats-grid, .workspace { grid-template-columns: 1fr !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="topbar">
+        <div class="brand">
+            <div class="brand-icon">👨‍🎓</div>
+            <div>
+                <h2 style="font-size:20px;">Student Helpdesk Portal</h2>
+                <p id="welcomeText" style="font-size:13px; color:#cbd5e1;">Logged in</p>
+            </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:center;">
+            <span class="role-pill">👨‍🎓 STUDENT PORTAL</span>
+            <button class="btn-top" onclick="openSettings()">⚙️ Settings</button>
+            <a href="index.html" class="logout-btn">Logout</a>
+        </div>
+    </div>
+
+    <div class="stats-grid">
+        <div class="stat-card"><div><h4>My Total Complaints</h4><h2 id="totalCount">0</h2></div><div style="font-size:28px;">📂</div></div>
+        <div class="stat-card"><div><h4>Pending / In Progress</h4><h2 id="pendingCount" style="color:#fcd34d;">0</h2></div><div style="font-size:28px;">⏳</div></div>
+        <div class="stat-card"><div><h4>Resolved Issues</h4><h2 id="resolvedCount" style="color:#6ee7b7;">0</h2></div><div style="font-size:28px;">✅</div></div>
+    </div>
+
+    <div class="workspace">
+        <div class="panel">
+            <h3>➕ Raise a New Complaint</h3>
+            <div id="toastMsg" class="toast">✅ Your ticket has been submitted to the Admin team!</div>
+
+            <form id="complaintForm">
+                <div class="form-group">
+                    <label>Student Name & Roll No</label>
+                    <input type="text" id="studentName" placeholder="Enter your Name & Roll No" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Issue Category</label>
+                        <select id="category">
+                            <option value="Electrical / Fan / Light">⚡ Electrical / Fan / Light</option>
+                            <option value="Campus Wi-Fi / Internet">📶 Campus Wi-Fi / Internet</option>
+                            <option value="Plumbing / Water Cooler">🚰 Washroom / Water Cooler</option>
+                            <option value="Hostel / Mess Issue">🍽️ Hostel / Mess Hygiene</option>
+                            <option value="Classroom Furniture">🪑 Classroom Bench / Door</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Urgency Priority</label>
+                        <select id="priority">
+                            <option value="Medium">🟡 Medium</option>
+                            <option value="High">🔴 High (Urgent)</option>
+                            <option value="Low">🟢 Low</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Select Campus Zone</label>
+                    <select id="locationType" onchange="handleZoneChange()">
+                        <option value="Academic Block">🏫 Academic Block (Block 1 - Block 7)</option>
+                        <option value="Campus Hostel">🛏️ Campus Hostel (Boys / Girls)</option>
+                        <option value="Campus Mess / Library">📚 Central Library / Mess / Canteen</option>
+                    </select>
+                </div>
+
+                <div class="form-group" id="academicBlockGroup">
+                    <label>Select Academic Block (1 to 7)</label>
+                    <select id="buildingName">
+                        <option value="Block 1">Block 1</option>
+                        <option value="Block 2">Block 2</option>
+                        <option value="Block 3">Block 3</option>
+                        <option value="Block 4">Block 4</option>
+                        <option value="Block 5">Block 5</option>
+                        <option value="Block 6">Block 6</option>
+                        <option value="Block 7">Block 7</option>
+                    </select>
+                </div>
+
+                <div class="form-row" id="hostelGroup" style="display:none;">
+                    <div class="form-group">
+                        <label>Hostel Category</label>
+                        <select id="hostelGender" onchange="updateHostelNames()">
+                            <option value="Boys Hostel">👦 Boys Hostel</option>
+                            <option value="Girls Hostel">👧 Girls Hostel</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Select Hostel Name</label>
+                        <select id="hostelNameSelect"></select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label id="roomLabel">Room / Classroom / Lab Number</label>
+                    <input type="text" id="roomNumber" placeholder="e.g., Room 302" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Issue Subject</label>
+                    <input type="text" id="title" placeholder="Short summary of the problem" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Detailed Description</label>
+                    <textarea id="description" placeholder="Explain the issue clearly so the technician can fix it..."></textarea>
+                </div>
+
+                <button type="button" class="btn-submit" onclick="submitTicket()">Submit Complaint Ticket</button>
+            </form>
+        </div>
+
+        <div class="panel">
+            <h3>📋 My Submitted Complaints & Live Status</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Ticket ID</th>
+                        <th>Category</th>
+                        <th>Location</th>
+                        <th>Issue Details</th>
+                        <th>Live Status (By Admin)</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="myTicketsBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal-bg" id="settingsModal">
+        <div class="modal-card">
+            <h3>⚙️ Student Portal Settings</h3>
+            <div class="setting-item">
+                <label>Update Your Name & Roll No</label>
+                <input type="text" id="setStudentName">
+            </div>
+            <div class="setting-item">
+                <label>Background Display Mode</label>
+                <select id="setTheme" onchange="applyTheme()">
+                    <option value="rgba(10, 15, 28, 0.78)">🏫 CGC Campus Glass (Default)</option>
+                    <option value="rgba(10, 15, 28, 0.95)">🌑 Dark Mode (High Contrast)</option>
+                    <option value="rgba(10, 15, 28, 0.55)">☀️ Clear Campus View</option>
+                </select>
+            </div>
+            <div style="display:flex; gap:10px; margin-top:18px;">
+                <button class="btn-submit" style="flex:1; padding:10px;" onclick="saveSettings()">Save Settings</button>
+                <button class="btn-withdraw" style="padding:10px 16px;" onclick="closeSettings()">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentUser = localStorage.getItem('campusUser') || '';
+
+        // Smart Hybrid Database Helper (Works on Spring Boot AND Standalone Cloud!)
+        function getLocalDB() {
+            let data = localStorage.getItem('cgc_tickets_db');
+            if (!data) {
+                const seed = [
+                    { id: 1, studentName: 'Aman Sharma (BCA)', userRole: 'STUDENT', category: 'Campus Wi-Fi / Internet', priority: 'High', locationType: 'Campus Hostel', buildingName: 'Tagore Boys Hostel (Boys Hostel)', roomNumber: 'Room 204', title: 'Wi-Fi router not working on 2nd floor', description: 'Signal drops frequently since morning.', status: 'Pending', createdAt: '11 Oct 2026' }
+                ];
+                localStorage.setItem('cgc_tickets_db', JSON.stringify(seed));
+                return seed;
+            }
+            return JSON.parse(data);
+        }
+
+        async function fetchAllTickets() {
+            try {
+                let res = await fetch('/api/complaints/all');
+                if (!res.ok) throw new Error('Offline');
+                let data = await res.json();
+                localStorage.setItem('cgc_tickets_db', JSON.stringify(data));
+                return data;
+            } catch (e) {
+                return getLocalDB();
+            }
+        }
+
+        window.onload = () => {
+            if (currentUser) {
+                document.getElementById('studentName').value = currentUser;
+                document.getElementById('setStudentName').value = currentUser;
+                document.getElementById('welcomeText').innerText = 'Logged in as Student: ' + currentUser;
+            }
+            updateHostelNames();
+            loadMyComplaints();
+        };
+
+        function handleZoneChange() {
+            const zone = document.getElementById('locationType').value;
+            const blockGrp = document.getElementById('academicBlockGroup');
+            const hostelGrp = document.getElementById('hostelGroup');
+            const roomLbl = document.getElementById('roomLabel');
+
+            if (zone === 'Campus Hostel') {
+                blockGrp.style.display = 'none';
+                hostelGrp.style.display = 'flex';
+                roomLbl.innerText = 'Hostel Room Number & Floor';
+            } else if (zone === 'Academic Block') {
+                blockGrp.style.display = 'block';
+                hostelGrp.style.display = 'none';
+                roomLbl.innerText = 'Classroom / Lab Number';
+            } else {
+                blockGrp.style.display = 'none';
+                hostelGrp.style.display = 'none';
+                roomLbl.innerText = 'Area / Hall Name';
+            }
+        }
+
+        function updateHostelNames() {
+            const gender = document.getElementById('hostelGender').value;
+            const hSelect = document.getElementById('hostelNameSelect');
+            if (gender === 'Boys Hostel') {
+                hSelect.innerHTML = `
+                    <option value="Tagore Boys Hostel">Tagore Boys Hostel</option>
+                    <option value="Aryabhatta Boys Hostel">Aryabhatta Boys Hostel</option>
+                    <option value="Vivekananda Boys Hostel">Vivekananda Boys Hostel</option>
+                    <option value="APJ Abdul Kalam Boys Hostel">APJ Abdul Kalam Hostel</option>
+                `;
+            } else {
+                hSelect.innerHTML = `
+                    <option value="Sarojini Girls Hostel">Sarojini Girls Hostel</option>
+                    <option value="Kalpana Chawla Girls Hostel">Kalpana Chawla Girls Hostel</option>
+                    <option value="Gargi Girls Hostel">Gargi Girls Hostel</option>
+                `;
+            }
+        }
+
+        function openSettings() { document.getElementById('settingsModal').style.display = 'flex'; }
+        function closeSettings() { document.getElementById('settingsModal').style.display = 'none'; }
+        function applyTheme() { document.documentElement.style.setProperty('--overlay', document.getElementById('setTheme').value); }
+        function saveSettings() {
+            const newName = document.getElementById('setStudentName').value.trim();
+            if (newName) {
+                currentUser = newName;
+                localStorage.setItem('campusUser', newName);
+                document.getElementById('studentName').value = newName;
+                document.getElementById('welcomeText').innerText = 'Logged in as Student: ' + newName;
+                loadMyComplaints();
+            }
+            closeSettings();
+        }
+
+        async function loadMyComplaints() {
+            let all = await fetchAllTickets();
+            let myTickets = all.filter(c => (c.userRole || 'STUDENT') === 'STUDENT').reverse();
+
+            document.getElementById('totalCount').innerText = myTickets.length;
+            document.getElementById('pendingCount').innerText = myTickets.filter(c => c.status !== 'Resolved').length;
+            document.getElementById('resolvedCount').innerText = myTickets.filter(c => c.status === 'Resolved').length;
+
+            const tbody = document.getElementById('myTicketsBody');
+            tbody.innerHTML = '';
+
+            if (myTickets.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:30px; color:#cbd5e1;">No complaints raised yet.</td></tr>`;
+                return;
+            }
+
+            myTickets.forEach(c => {
+                let st = c.status || 'Pending';
+                let cls = st === 'Pending' ? 'status-Pending' : (st === 'In Progress' ? 'status-Progress' : 'status-Resolved');
+                let actionBtn = st === 'Pending' 
+                    ? `<button class="btn-withdraw" onclick="withdrawTicket(${c.id})">Withdraw</button>`
+                    : `<span style="font-size:11px; color:#94a3b8;">🔒 Handled by Admin</span>`;
+
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong style="color:#7dd3fc;">#TKT-${100 + c.id}</strong><br><span style="font-size:10px; color:#cbd5e1;">${c.createdAt || ''}</span></td>
+                        <td>${c.category || 'General'}<br><span style="font-size:11px; color:#fde047;">● ${c.priority || 'Medium'}</span></td>
+                        <td><strong>${c.buildingName || '-'}</strong><br><span style="font-size:11px; color:#cbd5e1;">Room: ${c.roomNumber}</span></td>
+                        <td><strong>${c.title}</strong><br><span style="font-size:12px; color:#cbd5e1;">${c.description || '-'}</span></td>
+                        <td><span class="badge ${cls}">${st}</span></td>
+                        <td>${actionBtn}</td>
+                    </tr>
+                `;
+            });
+        }
+
+        async function submitTicket() {
+            const studentName = document.getElementById('studentName').value.trim();
+            const category = document.getElementById('category').value;
+            const priority = document.getElementById('priority').value;
+            const locationType = document.getElementById('locationType').value;
+            let buildingName = '';
+
+            if (locationType === 'Campus Hostel') {
+                buildingName = `${document.getElementById('hostelNameSelect').value} (${document.getElementById('hostelGender').value})`;
+            } else if (locationType === 'Academic Block') {
+                buildingName = document.getElementById('buildingName').value;
+            } else {
+                buildingName = 'Central Mess / Library';
+            }
+
+            const roomNumber = document.getElementById('roomNumber').value.trim();
+            const title = document.getElementById('title').value.trim();
+            const description = document.getElementById('description').value.trim();
+
+            if (!studentName || !roomNumber || !title) {
+                alert("Please fill in your Name, Room Number, and Issue Subject.");
+                return;
+            }
+
+            const payload = { studentName, userRole: 'STUDENT', category, priority, locationType, buildingName, roomNumber, title, description, status: 'Pending', createdAt: new Date().toLocaleDateString('en-IN') };
+
+            try {
+                let res = await fetch('/api/complaints/submit', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (!res.ok) throw new Error('Offline');
+            } catch (e) {
+                let db = getLocalDB();
+                payload.id = db.length ? Math.max(...db.map(x => x.id)) + 1 : 1;
+                db.push(payload);
+                localStorage.setItem('cgc_tickets_db', JSON.stringify(db));
+            }
+
+            let toast = document.getElementById('toastMsg');
+            toast.style.display = 'block';
+            setTimeout(() => toast.style.display = 'none', 3500);
+            document.getElementById('roomNumber').value = '';
+            document.getElementById('title').value = '';
+            document.getElementById('description').value = '';
+            loadMyComplaints();
+        }
+
+        async function withdrawTicket(id) {
+            if (!confirm("Withdraw this complaint ticket?")) return;
+            try {
+                let res = await fetch('/api/complaints/delete/' + id, { method: 'DELETE' });
+                if (!res.ok) throw new Error('Offline');
+            } catch (e) {
+                let db = getLocalDB().filter(x => x.id !== id);
+                localStorage.setItem('cgc_tickets_db', JSON.stringify(db));
+            }
+            loadMyComplaints();
+        }
+    </script>
+</body>
+</html>
